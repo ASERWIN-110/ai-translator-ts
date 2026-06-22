@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Translator TS</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>AI Translator TS</h1>
+        <p>OpenAI-compatible API · llama.cpp server · aria2 model downloads</p>
+      </div>
+      <span id="health" class="status">checking</span>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>Provider</h2>
+        <div class="grid">
+          <label>Base URL <input id="baseUrl" placeholder="http://127.0.0.1:8080/v1" /></label>
+          <label>Model <input id="model" placeholder="Qwen/Qwen3..." /></label>
+          <label>API Key <input id="apiKey" type="password" placeholder="optional for local llama-server" /></label>
+          <label>Timeout ms <input id="timeoutMs" type="number" min="1000" step="1000" /></label>
+        </div>
+        <div class="actions">
+          <button id="saveConfig">Save</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>llama.cpp Server</h2>
+        <div class="grid">
+          <label>Binary <input id="llamaBinary" placeholder="llama-server" /></label>
+          <label>GGUF Model Path <input id="llamaModel" placeholder="/models/model.gguf" /></label>
+          <label>Context <input id="ctxSize" type="number" min="512" step="512" /></label>
+          <label>GPU Layers <input id="gpuLayers" type="number" min="0" step="1" /></label>
+        </div>
+        <label class="check"><input id="flashAttention" type="checkbox" /> Flash attention</label>
+        <div class="actions">
+          <button id="startLlama">Start</button>
+          <button id="stopLlama" class="secondary">Stop</button>
+        </div>
+        <pre id="llamaLog"></pre>
+      </section>
+
+      <section class="panel">
+        <h2>Text Test</h2>
+        <div class="split">
+          <textarea id="inputText" placeholder="输入要翻译的文本"></textarea>
+          <textarea id="outputText" placeholder="译文" readonly></textarea>
+        </div>
+        <div class="actions">
+          <button id="translateText">Translate</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>File Translation</h2>
+        <div class="grid">
+          <label>Input Path <input id="inputPath" placeholder="/path/file.srt" /></label>
+          <label>Output Path <input id="outputPath" placeholder="optional" /></label>
+          <label>Type
+            <select id="fileType">
+              <option value="auto">auto</option>
+              <option value="txt">txt</option>
+              <option value="srt">srt</option>
+              <option value="json">json</option>
+              <option value="mtool">MTool JSON</option>
+              <option value="tpp">Translator++ folder</option>
+            </select>
+          </label>
+          <label>Prompt
+            <select id="promptTemplate">
+              <option value="游戏">游戏</option>
+              <option value="游戏_1b8">游戏_1b8</option>
+              <option value="其他">其他</option>
+            </select>
+          </label>
+          <label>Source Language
+            <select id="sourceLanguage">
+              <option value="日文">日文</option>
+              <option value="英文">英文</option>
+            </select>
+          </label>
+          <label>Cleanup
+            <select id="cleanupRule">
+              <option value="default">默认</option>
+              <option value="game">游戏</option>
+              <option value="none">不清理</option>
+            </select>
+          </label>
+          <label>Verification
+            <select id="verificationRule">
+              <option value="game">游戏</option>
+              <option value="text">文本</option>
+              <option value="subtitle">字幕</option>
+              <option value="none">不校验</option>
+            </select>
+          </label>
+          <label>Concurrency <input id="concurrency" type="number" min="1" max="8" value="1" /></label>
+          <label>Merge Length <input id="mergeLength" type="number" min="20" max="1000" value="100" /></label>
+        </div>
+        <div class="actions">
+          <button id="translateFile">Start File Job</button>
+        </div>
+        <pre id="jobs"></pre>
+      </section>
+
+      <section class="panel">
+        <h2>Model Download</h2>
+        <div class="grid">
+          <label>URL <input id="downloadUrl" placeholder="https://huggingface.co/.../model.gguf" /></label>
+          <label>Output Dir <input id="downloadDir" placeholder="downloads" /></label>
+          <label>File Name <input id="downloadName" placeholder="optional" /></label>
+          <label>Connections <input id="connections" type="number" min="1" max="16" value="8" /></label>
+        </div>
+        <div class="actions">
+          <button id="downloadModel">Download with aria2</button>
+        </div>
+        <pre id="downloads"></pre>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

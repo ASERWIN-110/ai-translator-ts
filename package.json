@@ -1,0 +1,78 @@
+{
+  "name": "ai-translator-ts",
+  "productName": "AI Translator TS",
+  "desktopName": "ai-translator-ts",
+  "version": "0.1.0",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "author": "AI Translator TS contributors",
+  "type": "module",
+  "main": "dist/electron-main.js",
+  "description": "TypeScript rewrite of an AI file translator with OpenAI-compatible APIs, llama.cpp server support, and aria2 model downloads.",
+  "scripts": {
+    "build": "tsc",
+    "desktop": "npm run build && electron .",
+    "dev": "npm run build && node --watch dist/server.js",
+    "release": "npm run build && electron-builder --publish never",
+    "release:linux": "npm run build && electron-builder --linux AppImage tar.gz --publish never",
+    "release:mac": "npm run build && electron-builder --mac dmg zip --publish never",
+    "release:win": "npm run build && electron-builder --win nsis zip --publish never",
+    "release:all": "npm run build && electron-builder --linux AppImage tar.gz --win nsis zip --publish never",
+    "start": "node dist/server.js",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "build": {
+    "appId": "com.local.aitranslatorts",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "public/**/*",
+      "data/**/*",
+      "package.json",
+      "README.md",
+      "LICENSE"
+    ],
+    "linux": {
+      "syncDesktopName": true,
+      "category": "Utility",
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "asarUnpack": [
+      "public/**/*"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+release/
+.translator-cache/
+downloads/
+downloads-test/
+*.log
+AITranslator.zip
+upstream-reference/
