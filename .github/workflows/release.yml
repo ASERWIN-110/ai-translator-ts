@@ -32,3 +32,28 @@ jobs:
         with:
           name: ai-translator-ts-${{ matrix.os }}
           path: release/*
+  build-embedded:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            script: release:embedded:linux
+          - os: windows-latest
+            script: release:embedded:win
+          - os: macos-latest
+            script: release:embedded:mac
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run ${{ matrix.script }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-translator-ts-embedded-${{ matrix.os }}
+          path: release-embedded/*

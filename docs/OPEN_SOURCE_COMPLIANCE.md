@@ -36,7 +36,9 @@ data/upstream-templates/
 
 This application uses Electron and TypeScript tooling through npm packages. Their own licenses are managed through `package-lock.json` and npm package metadata.
 
-This application does not bundle a GGUF model, CUDA runtime, Torch runtime, or llama.cpp binary by default. Users can configure an external OpenAI-compatible API or provide their own `llama-server` binary and GGUF model.
+The normal edition does not bundle a GGUF model, CUDA runtime, Torch runtime, or llama.cpp binary by default. Users can configure an external OpenAI-compatible API or provide their own `llama-server` binary and GGUF model.
+
+The embedded special edition bundles `node-llama-cpp` and its platform native bindings. `node-llama-cpp` is MIT-licensed and wraps llama.cpp. Do not bundle third-party GGUF models unless their model license permits redistribution.
 
 ## Release Guidance
 

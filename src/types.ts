@@ -1,4 +1,4 @@
-export type ProviderKind = "openai" | "llama-server";
+export type ProviderKind = "openai" | "llama-server" | "embedded";
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -30,6 +30,7 @@ export interface TranslateOptions {
   mergeLength: number;
   glossary?: Record<string, string>;
   provider: ProviderConfig;
+  embeddedLlama?: EmbeddedLlamaConfig;
 }
 
 export interface AppConfig {
@@ -38,6 +39,7 @@ export interface AppConfig {
   defaultProvider: ProviderConfig;
   defaults: Omit<TranslateOptions, "provider">;
   llamaServer: LlamaServerConfig;
+  embeddedLlama: EmbeddedLlamaConfig;
   downloadDir: string;
 }
 
@@ -50,6 +52,15 @@ export interface LlamaServerConfig {
   gpuLayers: number;
   flashAttention: boolean;
   extraArgs: string[];
+}
+
+export interface EmbeddedLlamaConfig {
+  modelPath: string;
+  contextSize: number;
+  gpuLayers: "auto" | "max" | number;
+  flashAttention: boolean;
+  batchSize?: number;
+  threads?: number;
 }
 
 export interface TranslationItem {

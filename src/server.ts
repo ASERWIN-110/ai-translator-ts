@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { fileURLToPath } from "node:url";
 import { loadConfig, resolveOptions, saveConfig } from "./config.js";
 import { downloads, startDownload, stopDownload } from "./downloads.js";
+import { embeddedLlamaStatus, unloadEmbeddedLlama } from "./embeddedLlama.js";
 import { notFound, readJson, sendError, sendJson, serveStatic } from "./http.js";
 import { llamaState, startLlamaServer, stopLlamaServer } from "./llamaServer.js";
 import { jobs, startFileTranslation, translateText } from "./translator.js";
@@ -52,11 +53,14 @@ async function routeApi(
   response: ServerResponse
 ): Promise<void> {
   if (method === "GET" && url.pathname === "/api/health") {
-    sendJson(response, 200, { ok: true, llama: llamaState() });
+    sendJson(response, 200, { ok: true, edition: process.env.AI_TRANSLATOR_EDITION ?? "api", llama: llamaState(), embedded: embeddedLlamaStatus() });
     return;
   }
 
   if (method === "GET" && url.pathname === "/api/config") {
+    if (process.env.AI_TRANSLATOR_EDITION === "embedded") {
+      config.defaultProvider = { ...config.defaultProvider, kind: "embedded", model: "embedded-gguf" };
+    }
     sendJson(response, 200, config);
     return;
   }
@@ -136,6 +140,17 @@ async function routeApi(
 
   if (method === "GET" && url.pathname === "/api/llama/status") {
     sendJson(response, 200, llamaState());
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/embedded/status") {
+    sendJson(response, 200, embeddedLlamaStatus());
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/api/embedded/unload") {
+    await unloadEmbeddedLlama();
+    sendJson(response, 200, embeddedLlamaStatus());
     return;
   }
 

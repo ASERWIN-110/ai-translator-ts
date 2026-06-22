@@ -43,6 +43,12 @@ export const defaultConfig: AppConfig = {
     gpuLayers: 999,
     flashAttention: true,
     extraArgs: []
+  },
+  embeddedLlama: {
+    modelPath: "",
+    contextSize: 8192,
+    gpuLayers: "auto",
+    flashAttention: true
   }
 };
 
@@ -72,6 +78,10 @@ export function resolveOptions(config: AppConfig, partial?: Partial<TranslateOpt
         ...(config.defaultProvider.extraParams ?? {}),
         ...(partial?.provider?.extraParams ?? {})
       }
+    },
+    embeddedLlama: {
+      ...config.embeddedLlama,
+      ...partial?.embeddedLlama
     },
     glossary: {
       ...(config.defaults.glossary ?? {}),

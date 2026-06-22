@@ -19,6 +19,13 @@
       <section class="panel">
         <h2>Provider</h2>
         <div class="grid">
+          <label>Mode
+            <select id="providerKind">
+              <option value="openai">OpenAI-compatible API</option>
+              <option value="llama-server">llama-server API</option>
+              <option value="embedded">Embedded GGUF</option>
+            </select>
+          </label>
           <label>Base URL <input id="baseUrl" placeholder="http://127.0.0.1:8080/v1" /></label>
           <label>Model <input id="model" placeholder="Qwen/Qwen3..." /></label>
           <label>API Key <input id="apiKey" type="password" placeholder="optional for local llama-server" /></label>
@@ -27,6 +34,29 @@
         <div class="actions">
           <button id="saveConfig">Save</button>
         </div>
+      </section>
+
+      <section class="panel" id="embeddedPanel">
+        <h2>Embedded GGUF</h2>
+        <div class="grid">
+          <label>GGUF Model Path <input id="embeddedModel" placeholder="/models/sakura-qwen.gguf" /></label>
+          <label>Context <input id="embeddedContext" type="number" min="512" step="512" /></label>
+          <label>GPU Layers
+            <select id="embeddedGpuLayers">
+              <option value="auto">auto</option>
+              <option value="max">max</option>
+              <option value="0">CPU only</option>
+              <option value="999">999</option>
+            </select>
+          </label>
+          <label>Threads <input id="embeddedThreads" type="number" min="0" step="1" placeholder="auto" /></label>
+        </div>
+        <label class="check"><input id="embeddedFlashAttention" type="checkbox" /> Flash attention</label>
+        <div class="actions">
+          <button id="useEmbedded">Use Embedded</button>
+          <button id="unloadEmbedded" class="secondary">Unload</button>
+        </div>
+        <pre id="embeddedStatus"></pre>
       </section>
 
       <section class="panel">

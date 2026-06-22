@@ -12,12 +12,18 @@
   "scripts": {
     "build": "tsc",
     "desktop": "npm run build && electron .",
+    "desktop:embedded": "npm run build && electron dist/electron-embedded-main.js",
     "dev": "npm run build && node --watch dist/server.js",
     "release": "npm run build && electron-builder --publish never",
     "release:linux": "npm run build && electron-builder --linux AppImage tar.gz --publish never",
     "release:mac": "npm run build && electron-builder --mac dmg zip --publish never",
     "release:win": "npm run build && electron-builder --win nsis zip --publish never",
     "release:all": "npm run build && electron-builder --linux AppImage tar.gz --win nsis zip --publish never",
+    "release:embedded": "npm run build && electron-builder --config electron-builder.embedded.json --publish never",
+    "release:embedded:linux": "npm run build && electron-builder --config electron-builder.embedded.json --linux AppImage --publish never",
+    "release:embedded:linux:all": "npm run build && electron-builder --config electron-builder.embedded.json --linux AppImage tar.gz --publish never",
+    "release:embedded:win": "npm run build && electron-builder --config electron-builder.embedded.json --win nsis zip --publish never",
+    "release:embedded:mac": "npm run build && electron-builder --config electron-builder.embedded.json --mac dmg zip --publish never",
     "start": "node dist/server.js",
     "test": "npm run build && node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
@@ -38,7 +44,9 @@
       "data/**/*",
       "package.json",
       "README.md",
-      "LICENSE"
+      "LICENSE",
+      "!node_modules/node-llama-cpp/**/*",
+      "!node_modules/@node-llama-cpp/**/*"
     ],
     "linux": {
       "syncDesktopName": true,
@@ -74,5 +82,8 @@
     "electron": "^42.4.1",
     "electron-builder": "^26.15.3",
     "typescript": "^5.5.0"
+  },
+  "dependencies": {
+    "node-llama-cpp": "^3.18.1"
   }
 }

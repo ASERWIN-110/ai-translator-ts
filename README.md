@@ -27,6 +27,16 @@ npm run desktop
 npm run release
 ```
 
+生成内嵌 GGUF 特供版：
+
+```bash
+npm run release:embedded:linux
+npm run release:embedded:win
+npm run release:embedded:mac
+```
+
+内嵌版产物会生成在 `release-embedded/`，应用名为 `AI Translator TS Embedded`。它通过 `node-llama-cpp` 在进程内直接加载 GGUF，不需要外部 `llama-server`。
+
 Linux 本机产物会生成在：
 
 ```text

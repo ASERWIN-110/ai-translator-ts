@@ -53,6 +53,38 @@ Click `Start`. The app sets the provider URL to the local server.
 
 For RTX 50 series GPUs, use a current llama.cpp CUDA build matching your driver/toolkit environment.
 
+## Embedded GGUF Edition
+
+The embedded special edition is a separate build named `AI Translator TS Embedded`. It loads GGUF files inside the Electron/Node process through `node-llama-cpp` instead of calling a local HTTP server.
+
+Build it with:
+
+```bash
+npm run release:embedded:linux
+npm run release:embedded:win
+npm run release:embedded:mac
+```
+
+The Linux artifact is written to:
+
+```text
+release-embedded/AI Translator TS Embedded-0.1.0-linux-x86_64.AppImage
+```
+
+Use the `Embedded GGUF` panel:
+
+- `GGUF Model Path`: Sakura/Qwen GGUF path.
+- `Context`: context size.
+- `GPU Layers`: `auto`, `max`, `CPU only`, or a fixed layer count.
+- `Threads`: optional CPU thread count.
+- `Flash attention`: enable if the model and backend support it.
+
+Click `Use Embedded`, then run translation normally.
+
+This edition is more convenient for direct local GGUF use, but it is also more sensitive to native binding compatibility. Build Windows embedded packages on Windows and macOS embedded packages on macOS so that the correct platform native bindings are installed and packaged.
+
+For Qwen3/Qwen3.5/Sakura variants, support depends on the `node-llama-cpp` bundled llama.cpp version. If a brand-new GGUF architecture is not supported yet, use the normal API edition with a newer external `llama-server` until the embedded binding catches up.
+
 ## Model Download
 
 The `Model Download` panel downloads files with `aria2c`.

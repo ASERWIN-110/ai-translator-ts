@@ -1,7 +1,7 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { createChatClient, type ChatClient } from "./chatClient.js";
 import { parseCompatibleDocument, writeDocument } from "./compatDocuments.js";
-import { OpenAICompatibleClient } from "./openai.js";
 import { buildTemplateMessages, cleanupItems, restoreLineBreaks, verifyTranslation } from "./rules.js";
 import type { ChatMessage, ParsedDocument, TranslateFileRequest, TranslateOptions, TranslationItem } from "./types.js";
 
@@ -21,7 +21,7 @@ export interface TranslationProgress {
 export const jobs = new Map<string, TranslationProgress>();
 
 export async function translateText(text: string, options: TranslateOptions): Promise<{ text: string; speed?: number }> {
-  const client = new OpenAICompatibleClient(options.provider);
+  const client = createChatClient(options);
   const result = await client.chat({
     messages: buildTemplateMessages(text, options, []),
     temperature: options.temperature,
@@ -61,7 +61,7 @@ async function translateFile(id: string, request: TranslateFileRequest, options:
   const inputPath = resolve(request.inputPath);
   const outputPath = resolve(request.outputPath ?? defaultOutputPath(inputPath));
   const doc = parseCompatibleDocument(inputPath, request.type ?? "auto");
-  const client = new OpenAICompatibleClient(options.provider);
+  const client = createChatClient(options);
   const history: ChatMessage[] = [];
   const failures: Array<{ id: string; text: string; error: string }> = [];
   const translatableItems = cleanupItems(doc.items, options);
@@ -79,7 +79,7 @@ async function translateFile(id: string, request: TranslateFileRequest, options:
 }
 
 async function translateWithRetry(
-  client: OpenAICompatibleClient,
+  client: ChatClient,
   text: string,
   options: TranslateOptions,
   history: ChatMessage[]
@@ -118,7 +118,7 @@ function normalizeTranslation(translated: string, source: string, glossary: Reco
 }
 
 async function translateOriginalStyle(
-  client: OpenAICompatibleClient,
+  client: ChatClient,
   document: ParsedDocument,
   items: TranslationItem[],
   options: TranslateOptions,
@@ -148,7 +148,7 @@ async function translateOriginalStyle(
 }
 
 async function translateBatch(
-  client: OpenAICompatibleClient,
+  client: ChatClient,
   batch: TranslationItem[],
   options: TranslateOptions,
   history: ChatMessage[],
@@ -177,7 +177,7 @@ async function translateBatch(
 }
 
 async function translateOne(
-  client: OpenAICompatibleClient,
+  client: ChatClient,
   item: TranslationItem,
   options: TranslateOptions,
   history: ChatMessage[],
