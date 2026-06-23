@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -66,34 +66,81 @@ try {
 }
 
 async function runProviderE2E(name, provider, embeddedLlama) {
-  console.log(`RUN ${name}: text translation`);
-  const textResult = await postJson("/api/translate/text", {
-    text: "Hello, adventurer.",
-    options: commonOptions(provider, embeddedLlama)
-  });
-  assert.equal(typeof textResult.text, "string", `${name} text response should contain text`);
-  assert.ok(textResult.text.trim().length > 0, `${name} text translation should not be empty`);
+  for (const source of [
+    "Hello, adventurer.",
+    "Save your game.",
+    "Open the ancient door."
+  ]) {
+    console.log(`RUN ${name}: text translation -> ${source}`);
+    const textResult = await postJson("/api/translate/text", {
+      text: source,
+      options: commonOptions(provider, embeddedLlama)
+    });
+    assertGoodTranslation(name, source, textResult.text);
+    console.log(`OK ${name}: text translation -> ${textResult.text.slice(0, 80)}`);
+  }
 
-  console.log(`OK ${name}: text translation -> ${textResult.text.slice(0, 60)}`);
+  await runTextFileCase(name, provider, embeddedLlama);
+  await runSrtCase(name, provider, embeddedLlama);
+  await runMToolCase(name, provider, embeddedLlama);
+  await runTppCase(name, provider, embeddedLlama);
+}
 
-  console.log(`RUN ${name}: file translation`);
+async function runTextFileCase(name, provider, embeddedLlama) {
   const inputPath = join(home, `${name}.txt`);
   const outputPath = join(home, `${name}.out.txt`);
   writeFileSync(inputPath, "Open the ancient door.\n", "utf8");
+  const output = await translateFile(name, provider, embeddedLlama, inputPath, outputPath, "txt");
+  assertGoodTranslation(name, "Open the ancient door.", output);
+  console.log(`OK ${name}: txt -> ${output.trim().slice(0, 80)}`);
+}
 
+async function runSrtCase(name, provider, embeddedLlama) {
+  const inputPath = join(home, `${name}.srt`);
+  const outputPath = join(home, `${name}.out.srt`);
+  writeFileSync(inputPath, "1\n00:00:01,000 --> 00:00:03,000\nSave your game.\n", "utf8");
+  const output = await translateFile(name, provider, embeddedLlama, inputPath, outputPath, "srt");
+  assert.match(output, /00:00:01,000 --> 00:00:03,000/, `${name} srt timing should be preserved`);
+  assert.ok(output.includes("1\n"), `${name} srt index should be preserved`);
+  assertGoodTranslation(name, "Save your game.", output);
+  console.log(`OK ${name}: srt -> ${output.trim().split("\n").at(-1)}`);
+}
+
+async function runMToolCase(name, provider, embeddedLlama) {
+  const inputPath = join(home, `${name}.mtool.json`);
+  const outputPath = join(home, `${name}.mtool.out.json`);
+  writeFileSync(inputPath, `${JSON.stringify({ "Open the ancient door.": "" }, null, 2)}\n`, "utf8");
+  const output = await translateFile(name, provider, embeddedLlama, inputPath, outputPath, "mtool");
+  const parsed = JSON.parse(output);
+  assert.ok(Object.hasOwn(parsed, "Open the ancient door."), `${name} mtool key should be preserved`);
+  assertGoodTranslation(name, "Open the ancient door.", parsed["Open the ancient door."]);
+  console.log(`OK ${name}: mtool -> ${parsed["Open the ancient door."].slice(0, 80)}`);
+}
+
+async function runTppCase(name, provider, embeddedLlama) {
+  const inputPath = join(home, `${name}-tpp`);
+  const outputPath = join(home, `${name}-tpp-out`);
+  mkdirSync(inputPath, { recursive: true });
+  writeFileSync(join(inputPath, "Map001.csv"), "Open the ancient door.,\n", "utf8");
+  await translateFile(name, provider, embeddedLlama, inputPath, outputPath, "tpp");
+  const output = readFileSync(join(outputPath, "Map001.csv"), "utf8");
+  assert.match(output, /^Open the ancient door\.,/);
+  assertGoodTranslation(name, "Open the ancient door.", output.split(",").slice(1).join(","));
+  console.log(`OK ${name}: tpp -> ${output.trim().slice(0, 80)}`);
+}
+
+async function translateFile(name, provider, embeddedLlama, inputPath, outputPath, type) {
+  console.log(`RUN ${name}: ${type} file translation`);
   const job = await postJson("/api/translate/file", {
     inputPath,
     outputPath,
-    type: "txt",
+    type,
     options: commonOptions(provider, embeddedLlama)
   });
-  assert.equal(job.state, "running", `${name} file job should start`);
-
+  assert.equal(job.state, "running", `${name} ${type} job should start`);
   const completed = await waitForJob(job.id, timeoutMs);
-  assert.equal(completed.state, "completed", `${name} file job should complete: ${completed.error || ""}`);
-  const output = readFileSync(outputPath, "utf8");
-  assert.ok(output.trim().length > 0, `${name} file output should not be empty`);
-  console.log(`OK ${name}: file translation -> ${output.trim().slice(0, 60)}`);
+  assert.equal(completed.state, "completed", `${name} ${type} job should complete: ${completed.error || ""}`);
+  return type === "tpp" ? "" : readFileSync(outputPath, "utf8");
 }
 
 function commonOptions(provider, embeddedLlama) {
@@ -114,6 +161,12 @@ function commonOptions(provider, embeddedLlama) {
     mergeLength: 200,
     glossary: {}
   };
+}
+
+function assertGoodTranslation(name, source, translated) {
+  const value = String(translated ?? "").trim();
+  assert.ok(value.length > 0, `${name} translation should not be empty`);
+  assert.notEqual(value, source, `${name} translation should not equal source`);
 }
 
 async function waitForJob(id, timeoutMs) {
