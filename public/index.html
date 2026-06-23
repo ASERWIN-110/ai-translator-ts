@@ -21,8 +21,13 @@
         <div class="grid">
           <label>Mode
             <select id="providerKind">
-              <option value="openai">OpenAI-compatible API</option>
+              <option value="openai">OpenAI</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="vllm">vLLM</option>
+              <option value="tabbyapi">TabbyAPI</option>
+              <option value="ollama">Ollama</option>
               <option value="llama-server">llama-server API</option>
+              <option value="custom-openai">Custom OpenAI-compatible</option>
               <option value="embedded">Embedded GGUF</option>
             </select>
           </label>
@@ -30,7 +35,14 @@
           <label>Model <input id="model" placeholder="Qwen/Qwen3..." /></label>
           <label>API Key <input id="apiKey" type="password" placeholder="optional for local llama-server" /></label>
           <label>Timeout ms <input id="timeoutMs" type="number" min="1000" step="1000" /></label>
+          <label>Token Parameter
+            <select id="tokenParameter">
+              <option value="max_tokens">max_tokens</option>
+              <option value="max_completion_tokens">max_completion_tokens</option>
+            </select>
+          </label>
         </div>
+        <label class="check"><input id="stripThinking" type="checkbox" /> Strip thinking output</label>
         <div class="actions">
           <button id="saveConfig">Save</button>
         </div>

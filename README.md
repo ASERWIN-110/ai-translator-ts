@@ -7,6 +7,7 @@
 ## 目标
 
 - 使用通用 OpenAI-compatible `/v1/chat/completions` API。
+- 内置 Provider 预设：OpenAI、DeepSeek、vLLM、TabbyAPI、Ollama、llama-server、自定义 OpenAI-compatible。
 - 本地模型通过新版 `llama-server` 提供 API，TS 程序不直接链接 CUDA/Torch。
 - 模型文件下载通过 `aria2c`。
 - 支持 `txt`、`srt`、`json` 文件翻译。

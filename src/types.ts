@@ -1,4 +1,4 @@
-export type ProviderKind = "openai" | "llama-server" | "embedded";
+export type ProviderKind = "openai" | "deepseek" | "vllm" | "tabbyapi" | "ollama" | "llama-server" | "custom-openai" | "embedded";
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -12,6 +12,9 @@ export interface ProviderConfig {
   model: string;
   timeoutMs: number;
   extraParams?: Record<string, unknown>;
+  headers?: Record<string, string>;
+  tokenParameter?: "max_tokens" | "max_completion_tokens";
+  stripThinking?: boolean;
 }
 
 export interface TranslateOptions {

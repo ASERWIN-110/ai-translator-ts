@@ -2,6 +2,16 @@ const $ = (id) => document.getElementById(id);
 
 let config;
 let edition = "api";
+const providerDefaults = {
+  openai: { baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini", apiKey: "", tokenParameter: "max_completion_tokens", stripThinking: true },
+  deepseek: { baseUrl: "https://api.deepseek.com", model: "deepseek-v4-flash", apiKey: "", tokenParameter: "max_tokens", stripThinking: true },
+  vllm: { baseUrl: "http://127.0.0.1:8000/v1", model: "local-model", apiKey: "", tokenParameter: "max_tokens", stripThinking: true },
+  tabbyapi: { baseUrl: "http://127.0.0.1:5000/v1", model: "local-model", apiKey: "", tokenParameter: "max_tokens", stripThinking: true },
+  ollama: { baseUrl: "http://127.0.0.1:11434/v1", model: "qwen3:8b", apiKey: "ollama", tokenParameter: "max_tokens", stripThinking: true },
+  "llama-server": { baseUrl: "http://127.0.0.1:8080/v1", model: "local-model", apiKey: "", tokenParameter: "max_tokens", stripThinking: true },
+  "custom-openai": { baseUrl: "http://127.0.0.1:8080/v1", model: "local-model", apiKey: "", tokenParameter: "max_tokens", stripThinking: true },
+  embedded: { baseUrl: "", model: "embedded-gguf", apiKey: "", tokenParameter: "max_tokens", stripThinking: true }
+};
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -30,6 +40,8 @@ async function loadConfig() {
   $("model").value = config.defaultProvider.model || "";
   $("apiKey").value = config.defaultProvider.apiKey || "";
   $("timeoutMs").value = config.defaultProvider.timeoutMs || 600000;
+  $("tokenParameter").value = config.defaultProvider.tokenParameter || "max_tokens";
+  $("stripThinking").checked = config.defaultProvider.stripThinking !== false;
   $("llamaBinary").value = config.llamaServer.binaryPath || "llama-server";
   $("llamaModel").value = config.llamaServer.modelPath || "";
   $("ctxSize").value = config.llamaServer.ctxSize || 8192;
@@ -55,6 +67,8 @@ function collectConfig() {
   config.defaultProvider.model = $("model").value.trim();
   config.defaultProvider.apiKey = $("apiKey").value;
   config.defaultProvider.timeoutMs = Number($("timeoutMs").value || 600000);
+  config.defaultProvider.tokenParameter = $("tokenParameter").value;
+  config.defaultProvider.stripThinking = $("stripThinking").checked;
   config.llamaServer.binaryPath = $("llamaBinary").value.trim() || "llama-server";
   config.llamaServer.modelPath = $("llamaModel").value.trim();
   config.llamaServer.ctxSize = Number($("ctxSize").value || 8192);
@@ -100,6 +114,16 @@ $("saveConfig").addEventListener("click", async () => {
   await refresh();
 });
 
+$("providerKind").addEventListener("change", () => {
+  const next = providerDefaults[$("providerKind").value];
+  if (!next) return;
+  $("baseUrl").value = next.baseUrl;
+  $("model").value = next.model;
+  $("apiKey").value = next.apiKey;
+  $("tokenParameter").value = next.tokenParameter;
+  $("stripThinking").checked = next.stripThinking;
+});
+
 $("useEmbedded").addEventListener("click", async () => {
   collectConfig();
   config.defaultProvider.kind = "embedded";
@@ -135,7 +159,8 @@ $("translateText").addEventListener("click", async () => {
       body: JSON.stringify({
         text: $("inputText").value,
         options: {
-          provider: collectConfig().defaultProvider
+          provider: collectConfig().defaultProvider,
+          embeddedLlama: config.embeddedLlama
         }
       })
     });
@@ -152,6 +177,7 @@ $("translateFile").addEventListener("click", async () => {
     type: $("fileType").value,
     options: {
       provider: collectConfig().defaultProvider,
+      embeddedLlama: config.embeddedLlama,
       concurrency: Number($("concurrency").value || 1),
       mergeLength: Number($("mergeLength").value || 100),
       promptTemplate: $("promptTemplate").value,

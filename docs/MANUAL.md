@@ -24,10 +24,13 @@ The app opens a local desktop GUI. Configuration and downloads are stored in the
 
 Open the `Provider` panel and set:
 
+- `Mode`: provider preset.
 - `Base URL`: OpenAI-compatible API base URL, for example `http://127.0.0.1:8080/v1`.
 - `Model`: model name sent to the API.
 - `API Key`: optional for local servers, required for most cloud APIs.
 - `Timeout ms`: request timeout.
+- `Token Parameter`: `max_tokens` for most OpenAI-compatible servers; `max_completion_tokens` for newer OpenAI models.
+- `Strip thinking output`: removes `<think>...</think>` and similar reasoning text before saving translations.
 
 The app calls:
 
@@ -36,6 +39,18 @@ The app calls:
 ```
 
 Any server compatible with OpenAI Chat Completions should work.
+
+Provider presets:
+
+- `OpenAI`: `https://api.openai.com/v1`, default token field `max_completion_tokens`.
+- `DeepSeek`: `https://api.deepseek.com`, default model `deepseek-v4-flash`.
+- `vLLM`: `http://127.0.0.1:8000/v1`.
+- `TabbyAPI`: `http://127.0.0.1:5000/v1`.
+- `Ollama`: `http://127.0.0.1:11434/v1`, API key defaults to `ollama` for the OpenAI compatibility layer.
+- `llama-server`: `http://127.0.0.1:8080/v1`.
+- `Custom OpenAI-compatible`: manually set URL/model/key.
+
+The provider presets only configure connection defaults. You can still edit the URL, model, token parameter, API key, and timeout manually.
 
 ## Local GGUF Model
 

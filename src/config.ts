@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { applyProviderProfile, providerDefaults } from "./providerProfiles.js";
 import type { AppConfig, TranslateOptions } from "./types.js";
 
 export const appDataDir = resolve(process.env.AI_TRANSLATOR_HOME ?? ".translator-cache");
@@ -9,14 +10,7 @@ export const defaultConfig: AppConfig = {
   host: "127.0.0.1",
   port: 17331,
   downloadDir: resolve(appDataDir, "downloads"),
-  defaultProvider: {
-    kind: "openai",
-    baseUrl: "http://127.0.0.1:8080/v1",
-    apiKey: "",
-    model: "local-model",
-    timeoutMs: 600_000,
-    extraParams: {}
-  },
+  defaultProvider: providerDefaults("openai"),
   defaults: {
     sourceLanguage: "日文/英文",
     targetLanguage: "简体中文",
@@ -71,14 +65,18 @@ export function resolveOptions(config: AppConfig, partial?: Partial<TranslateOpt
   return {
     ...config.defaults,
     ...partial,
-    provider: {
+    provider: applyProviderProfile({
       ...config.defaultProvider,
       ...partial?.provider,
+      headers: {
+        ...(config.defaultProvider.headers ?? {}),
+        ...(partial?.provider?.headers ?? {})
+      },
       extraParams: {
         ...(config.defaultProvider.extraParams ?? {}),
         ...(partial?.provider?.extraParams ?? {})
       }
-    },
+    }),
     embeddedLlama: {
       ...config.embeddedLlama,
       ...partial?.embeddedLlama
