@@ -44,6 +44,7 @@
       "dist/**/*",
       "public/**/*",
       "data/**/*",
+      "docs/**/*",
       "package.json",
       "README.md",
       "LICENSE",
