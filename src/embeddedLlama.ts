@@ -50,13 +50,7 @@ export class EmbeddedLlamaClient {
 }
 
 export async function unloadEmbeddedLlama(): Promise<void> {
-  await enqueue(async () => {
-    const state = loaded;
-    loaded = undefined;
-    state?.session.dispose({ disposeSequence: true });
-    await state?.context.dispose();
-    await state?.model.dispose();
-  });
+  await enqueue(disposeLoaded);
 }
 
 export function embeddedLlamaStatus(): { loaded: boolean; modelPath?: string; gpuLayers?: number; contextSize?: number } {
@@ -74,9 +68,9 @@ async function ensureLoaded(config: EmbeddedLlamaConfig): Promise<LoadedState> {
   const key = JSON.stringify(config);
   if (loaded?.key === key) return loaded;
 
-  await unloadEmbeddedLlama();
+  await disposeLoaded();
   const module = await import("node-llama-cpp");
-  const llama = await module.getLlama();
+  const llama = await module.getLlama(llamaOptions());
   const model = await llama.loadModel({
     modelPath: config.modelPath,
     gpuLayers: config.gpuLayers,
@@ -96,6 +90,25 @@ async function ensureLoaded(config: EmbeddedLlamaConfig): Promise<LoadedState> {
 
   loaded = { key, model, context, session };
   return loaded;
+}
+
+async function disposeLoaded(): Promise<void> {
+  const state = loaded;
+  loaded = undefined;
+  state?.session.dispose({ disposeSequence: true });
+  await state?.context.dispose();
+  await state?.model.dispose();
+}
+
+function llamaOptions(): import("node-llama-cpp").LlamaOptions {
+  const gpu = process.env.AI_TRANSLATOR_LLAMA_GPU;
+  if (gpu === "cpu" || gpu === "false" || gpu === "0") {
+    return { gpu: false as never, build: "never", progressLogs: false };
+  }
+  if (gpu === "cuda" || gpu === "vulkan" || gpu === "metal" || gpu === "auto") {
+    return { gpu, build: "never", progressLogs: false };
+  }
+  return { build: "never", progressLogs: false };
 }
 
 function toChatHistory(messages: ChatMessage[]): import("node-llama-cpp").ChatHistoryItem[] {

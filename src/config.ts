@@ -94,6 +94,7 @@ function mergeConfig(base: AppConfig, incoming: Partial<AppConfig>): AppConfig {
     ...incoming,
     defaultProvider: { ...base.defaultProvider, ...incoming.defaultProvider },
     defaults: { ...base.defaults, ...incoming.defaults },
-    llamaServer: { ...base.llamaServer, ...incoming.llamaServer }
+    llamaServer: { ...base.llamaServer, ...incoming.llamaServer },
+    embeddedLlama: { ...base.embeddedLlama, ...incoming.embeddedLlama }
   };
 }
